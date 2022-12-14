@@ -81,7 +81,7 @@ def filter_text(a,path):
           result_list.append(i["text"])
       return "".join(result_list)
     elif path == "CanUsedGod":
-      goddict = {"Urban":"アーバン","Flora":"フローラ","Nyaptov":"ニャプトフ","Rumor":"ルーモア","Wi-ki":"ウィ=キ"}
+      goddict = {"Urban":"ウルバン","Flora":"フローラ","Nyaptov":"ニャプトフ","Rumor":"ルーモア","Wi-ki":"ウィ=キ"}
       if nbt == "ALL":
         return " ".join(goddict.values())
       #j = json.loads(nbt)

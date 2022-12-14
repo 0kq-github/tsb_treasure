@@ -39,7 +39,7 @@ def filter_text(a,path):
       return None
     if not replaced:
       return replaced
-    print(replaced)
+    #print(replaced)
     nbt = nbtlib.parse_nbt(replaced)
     result_list = []
     if (path == "Name") or (path == "Lore"):
@@ -67,7 +67,8 @@ def filter_text(a,path):
         else:
           result_list.append(j["text"])
         #print(j["text"])
-      return "".join(result_list)
+      result = "".join(result_list)
+      return result.replace("\"","'")
     elif (path == "CostText") and (replaced != None):
       if not isinstance(nbt,str):
         return nbt

@@ -3,6 +3,7 @@ import os
 import re
 import json
 import shutil
+import nbtlib
 
 treasure_list = glob.glob("./sacred_treasure/*")
 output_folder = "./export/"
@@ -36,29 +37,56 @@ def filter_text(a,path):
       replaced = text_replace(f.read())[path]
     except KeyError:
       return None
-    if path == "Name":
-      result_d = json.loads(replaced.strip("'"))
-      try:
-        return result_d["text"]
-      except:
-        text:str = ""
-        for r in result_d:
-          text += r.get("text") or ""
-        return text
-    elif path == "Lore":
-      text_list = re.findall("(?<=\"text\":\").*?(?=\")|(?<=\"translate\":\").*?(?=\")",replaced)
-      result = "".join(text_list)
-      return result
+    if not replaced:
+      return replaced
+    print(replaced)
+    nbt = nbtlib.parse_nbt(replaced)
+    result_list = []
+    if (path == "Name") or (path == "Lore"):
+      if isinstance(nbt,list):
+        for i in nbt:
+          if (i[0] == "[") or (i[-1] == "]"):
+            i = i.lstrip("[").rstrip("]")
+            i = "[" + i + "]"
+          j = json.loads(i)
+          if isinstance(j,list):
+            for v in j:
+              result_list.append(v["text"])
+              #print(v["text"])
+          elif isinstance(j,dict):
+            if "text" in j.keys():
+              result_list.append(j["text"])
+          else:
+            continue
+      else:
+        j = json.loads(nbt)
+        if isinstance(j,list):
+          for i in j:
+            if "text" in i.keys():
+              result_list.append(i["text"])
+        else:
+          result_list.append(j["text"])
+        #print(j["text"])
+      return "".join(result_list)
     elif (path == "CostText") and (replaced != None):
-      cost_list = re.findall("(?<=\"text\":\").*?(?=\")|(?<=\"translate\":\").*?(?=\")",replaced)
-      result = " ".join(cost_list)
-      return result
+      if not isinstance(nbt,str):
+        return nbt
+      j = json.loads(nbt)
+      result_list = []
+      for i in j:
+        if "translate" in i.keys():
+          result_list.append(i["translate"])
+        elif "text" in i.keys():
+          result_list.append(i["text"])
+      return "".join(result_list)
     elif path == "CanUsedGod":
-      godlist = re.findall("(?<=')[^,]*?(?=')",replaced)
-      result = []
       goddict = {"Urban":"アーバン","Flora":"フローラ","Nyaptov":"ニャプトフ","Rumor":"ルーモア","Wi-ki":"ウィ=キ"}
-      if not godlist:
+      if nbt == "ALL":
         return " ".join(goddict.values())
+      #j = json.loads(nbt)
+      if isinstance(nbt,list):
+        godlist = [str(v) for v in nbt]
+      result = []
       for i in godlist:
         result.append(goddict[i])
       return " ".join(result)
